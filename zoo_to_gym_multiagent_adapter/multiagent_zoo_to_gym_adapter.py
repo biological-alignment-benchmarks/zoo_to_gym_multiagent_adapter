@@ -159,10 +159,11 @@ class MultiAgentZooToGymAdapterZooSide(gym.Env):
     other agents have taken their step as well.
     """
 
-    def __init__(self, zoo_env, cfg):
+    def __init__(self, zoo_env, env_classname, cfg):
         super().__init__()
 
         self.env = zoo_env
+        self.env_classname = env_classname
         self.cfg = cfg
         self.agent_ids = zoo_env.agents
 
@@ -220,6 +221,7 @@ class MultiAgentZooToGymAdapterZooSide(gym.Env):
                 gpu_index,
                 num_total_steps,
                 model_constructor,
+                self.env_classname,
                 agent_id,
                 checkpoint_filename,
                 self.cfg,
