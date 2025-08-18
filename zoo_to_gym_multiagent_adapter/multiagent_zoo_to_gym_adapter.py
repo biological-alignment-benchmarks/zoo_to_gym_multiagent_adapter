@@ -63,6 +63,9 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
         self.observation_space = observation_space
         self.action_space = action_space
 
+    def set_model(self, model):
+        self.model = model
+
     def reset(self, seed=None, options=None, *args, **kwargs):
         """
         Reset the environment.
@@ -78,6 +81,14 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
         data = saferecv(self.receiver_pipe, self.parent_process)
         if data[0] == "reset_result":
             (_, observation, info) = data
+
+            if hasattr(self.model, "policy"):
+                if hasattr(self.model.policy, "my_reset"):
+                    self.model.policy.my_reset(observation, info)
+
+                if hasattr(self.model.policy, "set_info"):
+                    self.model.policy.set_info(info)
+
             return observation, info
         elif data[0] == "force_termination":
             raise Exception("Forced termination")
@@ -101,6 +112,10 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
         data = saferecv(self.receiver_pipe, self.parent_process)
         if data[0] == "step_result":
             (_, observation, reward, terminated, truncated, info) = data
+
+            if hasattr(self.model, "policy") and hasattr(self.model.policy, "set_info"):
+                self.model.policy.set_info(info)
+
             return observation, reward, terminated, truncated, info
         elif data[0] == "force_termination":
             raise Exception("Forced termination")
