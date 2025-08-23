@@ -42,11 +42,14 @@ def sb3_agent_train_thread_entry_point(
     gpu_index,
     num_total_steps,
     model_constructor,
+    env_classname,
     agent_id,
     checkpoint_filename,
     cfg,
     observation_space,
     action_space,
+    *args,
+    **kwargs,
 ):
     # activate selected GPU
     select_gpu(gpu_index)
@@ -55,7 +58,8 @@ def sb3_agent_train_thread_entry_point(
         pipe, agent_id, checkpoint_filename, observation_space, action_space
     )
     try:
-        model = model_constructor(env_wrapper, cfg)
+        model = model_constructor(env_wrapper, env_classname, agent_id, cfg)
+        env_wrapper.set_model(model)
         model.learn(total_timesteps=num_total_steps)
         filename_timestamp_sufix_str = datetime.datetime.now().strftime(
             "%Y_%m_%d_%H_%M_%S_%f"
@@ -70,7 +74,7 @@ def sb3_agent_train_thread_entry_point(
 
 
 # need separate function outside of class in order to init multi-model training threads
-def dqn_model_constructor(env, cfg):
+def dqn_model_constructor(env, env_classname, agent_id, cfg):
     return DQN(
         env,
         verbose=1,
@@ -92,6 +96,11 @@ class DQNAgent:
         self.id = agent_id
         self.cfg = cfg
         self.env = env
+        self.env_classname = (
+            env.__class__.__module__
+            + "."
+            + env.__class__.__qualname__
+        )
         self.test_mode = test_mode
         self.last_action = None
         self.model = None  # for single-model scenario
@@ -107,7 +116,7 @@ class DQNAgent:
             self.env.num_agents == 1 or self.test_mode
         ):  # during test, each agent has a separate in-process instance with its own model and not using threads/subprocesses
             env = SingleAgentZooToGymAdapter(env, self.id)
-            self.model = self.model_constructor(env, cfg)
+            self.model = self.model_constructor(env, self.env_classname, self.id, cfg)
         else:
             pass  # multi-model training will be automatically set up by the base class when self.model is None. These models will be saved to self.models and there will be only one agent instance in the main process. Actual agents will run in threads/subprocesses because SB3 requires Gym interface.
 
@@ -136,7 +145,7 @@ class DQNAgent:
             checkpoint_filenames = self.get_checkpoint_filenames(
                 include_timestamp=False
             )
-            env_wrapper = MultiAgentZooToGymAdapterZooSide(self.env, self.cfg)
+            env_wrapper = MultiAgentZooToGymAdapterZooSide(self.env, self.cfg, self.env_classname)
             self.models, self.exceptions = env_wrapper.train(
                 num_total_steps=num_total_steps,
                 agent_thread_entry_point=sb3_agent_train_thread_entry_point,

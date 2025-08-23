@@ -63,6 +63,8 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
         self.observation_space = observation_space
         self.action_space = action_space
 
+        self.model = None
+
     def set_model(self, model):
         self.model = model
 
@@ -174,10 +176,16 @@ class MultiAgentZooToGymAdapterZooSide(gym.Env):
     other agents have taken their step as well.
     """
 
-    def __init__(self, zoo_env, env_classname, cfg):
+    def __init__(self, zoo_env, cfg, env_classname = None):
         super().__init__()
 
         self.env = zoo_env
+        if env_classname is None:
+            env_classname = (
+                zoo_env.__class__.__module__
+                + "."
+                + zoo_env.__class__.__qualname__
+            )
         self.env_classname = env_classname
         self.cfg = cfg
         self.agent_ids = zoo_env.agents
