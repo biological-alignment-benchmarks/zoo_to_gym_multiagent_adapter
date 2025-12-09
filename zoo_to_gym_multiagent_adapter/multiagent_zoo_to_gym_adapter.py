@@ -85,11 +85,20 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
             (_, observation, info) = data
 
             if hasattr(self.model, "policy"):
+
                 if hasattr(self.model.policy, "my_reset"):
                     self.model.policy.my_reset(observation, info)
 
+                if hasattr(self.model.policy, "my_reset_with_infos"):
+                    self.model.policy.my_reset_with_infos([observation], [info])
+
                 if hasattr(self.model.policy, "set_info"):
                     self.model.policy.set_info(info)
+
+                if hasattr(self.model.policy, "set_infos"):
+                    self.model.policy.set_infos([info])
+
+            #/ if hasattr(self.model, "policy"):
 
             return observation, info
         elif data[0] == "force_termination":
@@ -115,8 +124,11 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
         if data[0] == "step_result":
             (_, observation, reward, terminated, truncated, info) = data
 
-            if hasattr(self.model, "policy") and hasattr(self.model.policy, "set_info"):
-                self.model.policy.set_info(info)
+            if hasattr(self.model, "policy"):
+                if hasattr(self.model.policy, "set_info"):
+                    self.model.policy.set_info(info)
+                if hasattr(self.model.policy, "set_infos"):
+                    self.model.policy.set_infos([info])
 
             return observation, reward, terminated, truncated, info
         elif data[0] == "force_termination":
