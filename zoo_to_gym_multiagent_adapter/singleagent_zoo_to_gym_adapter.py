@@ -26,6 +26,10 @@ class SingleAgentZooToGymAdapter(gym.Env):
         self.observation_space = self.env.observation_spaces[self.agent_name]
         self.action_space = self.env.action_spaces[self.agent_name]
 
+    @property
+    def num_envs(self):     # called by VecCheckNan env
+        return 1
+
     def reset(self, seed=None, options=None, *args, **kwargs):
         """
         Reset the environment.

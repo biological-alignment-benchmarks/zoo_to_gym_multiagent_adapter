@@ -65,6 +65,10 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
 
         self.model = None
 
+    @property
+    def num_envs(self):     # called by VecCheckNan env
+        return 1
+
     def set_model(self, model):
         self.model = model
 
