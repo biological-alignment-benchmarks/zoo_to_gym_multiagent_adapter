@@ -63,6 +63,8 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
         self.observation_space = observation_space
         self.action_space = action_space
 
+        self.render_mode = None  # Some libraries require this field to be present. The actual value seems to be unimportant.
+
         self.model = None
 
     @property

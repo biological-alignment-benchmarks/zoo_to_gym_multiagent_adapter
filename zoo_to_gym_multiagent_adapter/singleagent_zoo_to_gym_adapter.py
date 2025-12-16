@@ -26,6 +26,8 @@ class SingleAgentZooToGymAdapter(gym.Env):
         self.observation_space = self.env.observation_spaces[self.agent_name]
         self.action_space = self.env.action_spaces[self.agent_name]
 
+        self.render_mode = None  # Some libraries require this field to be present. The actual value seems to be unimportant.
+
     @property
     def num_envs(self):     # called by VecCheckNan env
         return 1
