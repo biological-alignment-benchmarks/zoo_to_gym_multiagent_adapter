@@ -13,6 +13,13 @@ class SingleAgentZooToGymAdapter(gym.Env):
     A wrapper that transforms a PettingZoo environment with exactly one agent
     into a single-agent Gymnasium environment.
     Both Zoo ParallelEnv and Zoo AECEnv (sequential env) are supported.
+
+    Similar to using:
+    env = ss.pettingzoo_env_to_vec_env_v1(env)
+    env = ss.concat_vec_envs_v1(env, num_vec_envs=1, num_cpus=1, 
+                                base_class="stable_baselines3")
+    ... but simpler internally and also automatically supports AECEnv, which 
+    would need yet one more additional wrapper when using SuperSuit.
     """
 
     def __init__(self, zoo_env, agent_id):
@@ -31,6 +38,10 @@ class SingleAgentZooToGymAdapter(gym.Env):
     @property
     def num_envs(self):     # called by VecCheckNan env
         return 1
+
+    # Called by VecCheckNan env. Lets simulate vectorised env here.
+    def get_attr(self, attr_name, indices = None):
+        return [getattr(self, attr_name)]
 
     def reset(self, seed=None, options=None, *args, **kwargs):
         """

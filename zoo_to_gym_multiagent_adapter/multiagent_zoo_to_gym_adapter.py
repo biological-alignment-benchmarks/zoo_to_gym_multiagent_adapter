@@ -71,6 +71,10 @@ class MultiAgentZooToGymAdapterGymSide(gym.Env):
     def num_envs(self):     # called by VecCheckNan env
         return 1
 
+    # Called by VecCheckNan env. Lets simulate vectorised env here.
+    def get_attr(self, attr_name, indices = None):
+        return [getattr(self, attr_name)]
+
     def set_model(self, model):
         self.model = model
 
