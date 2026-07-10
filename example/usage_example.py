@@ -14,6 +14,11 @@ from zoo_to_gym_multiagent_adapter.singleagent_zoo_to_gym_adapter import (
     SingleAgentZooToGymAdapter,
 )
 
+from zoo_to_gym_multiagent_adapter.multiagent_zoo_to_gym_adapter import (
+    MultiAgentZooToGymAdapterGymSide,
+    MultiAgentZooToGymAdapterZooSide,
+)
+
 import torch
 from stable_baselines3 import DQN
 
@@ -118,7 +123,7 @@ class DQNAgent:
             env = SingleAgentZooToGymAdapter(env, self.id)
             self.model = self.model_constructor(env, self.env_classname, self.id, cfg)
         else:
-            pass  # multi-model training will be automatically set up by the base class when self.model is None. These models will be saved to self.models and there will be only one agent instance in the main process. Actual agents will run in threads/subprocesses because SB3 requires Gym interface.
+            pass  # multi-model training will be automatically set up inside train() method when self.model is None. These models will be saved to self.models and there will be only one agent instance in the main process. Actual agents will run in threads/subprocesses because SB3 requires Gym interface.
 
     # called during test
     def get_action(
